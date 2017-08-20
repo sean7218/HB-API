@@ -8,6 +8,12 @@
       "version": "2.0.5"
     },
     {
+      "package": "MongoDB",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-MongoDB.git",
+      "version": "2.0.10"
+    },
+    {
       "package": "PerfectCrypto",
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Crypto.git",
@@ -42,6 +48,12 @@
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Thread.git",
       "version": "2.0.12"
+    },
+    {
+      "package": "libmongoc",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-mongo-c.git",
+      "version": "2.0.1"
     }
   ],
   "version": 1
