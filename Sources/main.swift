@@ -19,11 +19,6 @@ routes.add(method: .get, uri: "/hello", handler: {
     response.completed()
 })
 
-routes.add(method: .get, uri: "/api/v1/horse", handler: {
-    request, response in
-    
-    response.completed()
-})
 
 func returnJSONMessage(message: String, response: HTTPResponse) {
     do {
@@ -34,6 +29,17 @@ func returnJSONMessage(message: String, response: HTTPResponse) {
         response.setBody(string: "Error Handling Request: \(error)")
             .completed(status: .internalServerError)
         
+    }
+}
+
+func jsonHorse(data: [String: Any], reponse: HTTPResponse){
+    do {
+        try reponse.setBody(json: data)
+        .setHeader(.contentType, value: "application/json")
+        .completed()
+    } catch {
+        reponse.setBody(string: "Error Handling Request")
+            .completed(status: .internalServerError)
     }
 }
 
@@ -59,26 +65,6 @@ routes.add(method: .post, uri: "/api/v1/horse") {
         return
     }
     returnJSONMessage(message: name, response: response)
-}
-
-routes.add(method: .get, uri: "api/v1/bourbon", handler: {
-    request, response in
-    
-
-})
-
-routes.add(method: .get, uri: "/", handler: {
-  request, response in
-  response.setHeader(.contentType, value: "text/html")
-  response.appendBody(string: "<html>Website</html>")
-  response.completed()
-})
-
-routes.add(method: .post, uri: "/api/v1/horse") {
-    request, response in
-
-    response.completed()
-
 }
 
 routes.add(method: .get, uri: "/v1") { (req, res) in
@@ -149,7 +135,40 @@ routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
     
 })
 
+routes.add(method: .get, uri: "/v1/mongo/{name}", handler: {
+    request, response in
+    let client = try! MongoClient(uri: "mongodb://localhost")
+    let db = client.getDatabase(name: "mydb")
+    let col = db.getCollection(name: "users")
+    defer {
+        col?.close()
+        db.close()
+        client.close()
+    }
+    let query = BSON()
+    query.append(key: "email", string: "lucy1@gmail.com")
+    
+    let arr = col?.find(query: query)
 
+    // define a returning file
+    var json = [[String: Any]]()
+    var users = [User]()
+    for i in arr! {
+        
+
+        guard let user = try! i.asString.jsonDecode() as? User else {
+            return
+        }
+        
+        users.append(user)
+        
+        //let user = try! i.asString.jsonDecode() as! [String: Any]
+        //json.append(user)
+    }
+    
+    try! response.setBody(json: users)
+    .completed()
+})
 
 
 struct Filter1: HTTPRequestFilter {
