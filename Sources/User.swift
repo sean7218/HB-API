@@ -10,26 +10,28 @@
 import PerfectLib
 
 class User: JSONConvertibleObject {
+    
     static let registerName = "user"
     
-    var username: String = ""
-    var email: String = ""
-    var password: String = ""
+    var id = ""
+    var name = ""
+    var imageUrl = ""
+    var luck = 0
     
     override func setJSONValues(_ values: [String : Any]) {
-        self.username = getJSONValue(named: "username", from: values, defaultValue: "")
-        self.email = getJSONValue(named: "email", from: values, defaultValue: "")
-        self.password = getJSONValue(named: "password", from: values, defaultValue: "")
+        self.id = getJSONValue(named: "id", from: values,  defaultValue: "")
+        self.name = getJSONValue(named: "name", from: values, defaultValue:"")
+        self.imageUrl = getJSONValue(named: "imageUrl", from: values,  defaultValue: "")
+        self.luck = getJSONValue(named: "luck", from: values,  defaultValue: 0)
     }
     
     override func getJSONValues() -> [String : Any] {
         return [
             JSONDecoding.objectIdentifierKey: User.registerName,
-            "email": self.email,
-            "username": self.username,
-            "passpord": self.password
+            "id": self.id,
+            "name": self.name,
+            "imageUrl": self.imageUrl,
+            "luck": self.luck
         ]
     }
-    
 }
-

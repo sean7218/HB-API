@@ -9,7 +9,11 @@ let server = HTTPServer()
 
 var routes = Routes()
 
-routes.add(method: .get, uri: "/hello", handler: {
+JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
+JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
+JSONDecoding.registerJSONDecodable(name: User.registerName, creator: { return User() })
+
+routes.add(method: .get, uri: "/", handler: {
     request, response in
     // Setting the response content type explicitly to text/html
     response.setHeader(.contentType, value: "text/html")
@@ -20,66 +24,25 @@ routes.add(method: .get, uri: "/hello", handler: {
 })
 
 
-func returnJSONMessage(message: String, response: HTTPResponse) {
-    do {
-        try response.setBody(json: ["message": message])
-        .setHeader(.contentType, value: "application/json")
-        .completed()
-    } catch {
-        response.setBody(string: "Error Handling Request: \(error)")
-            .completed(status: .internalServerError)
-        
-    }
-}
-
-func jsonHorse(data: [String: Any], reponse: HTTPResponse){
-    do {
-        try reponse.setBody(json: data)
-        .setHeader(.contentType, value: "application/json")
-        .completed()
-    } catch {
-        reponse.setBody(string: "Error Handling Request")
-            .completed(status: .internalServerError)
-    }
-}
-
-routes.add(method: .get, uri: "/api/v1/getHorses", handler: {
+routes.add(method: .get, uri: "/v1/bourbon", handler: {
     request, response in
-    returnJSONMessage(message: "Hi", response: response)
+    
+    let wdir = Dir("~/apps/HBApi/Sources/")
+    let json = File(wdir.path + "bourbon.json")
+    var result = ""
+    do {
+        result = try json.readString()
+    } catch {
+        print(error)
+    }
+    response.setHeader(.contentType, value: "application/json")
+    response.appendBody(string: result)
+    response.completed()
+    
 })
 
-routes.add(method: .get, uri: "/api/v1/{horse_name}") {
-    (request, response) in
-    guard let horseName = request.urlVariables["horse_name"] else {
-        response.completed(status: .badRequest)
-        return
-    }
-    returnJSONMessage(message: horseName, response: response)
-    response.completed()
-}
 
-routes.add(method: .post, uri: "/api/v1/horse") {
-    (request, response) in
-    guard let name = request.param(name: "name") else {
-        response.completed(status: .badRequest)
-        return
-    }
-    returnJSONMessage(message: name, response: response)
-}
 
-routes.add(method: .get, uri: "/v1") { (req, res) in
-    res.appendBody(string: "Hi this is the v1 route")
-    res.setBody(string: "This is the body of the v1 get method")
-    res.completed()
-}
-
-routes.add(method: .get, uri: "/v1/v2/{bourbon}") { (req, res) in
-    //res.setBody(string: "Variables are following \(String(describing: req.urlVariables["bourbon"])) is the best one \n")
-    //res.appendBody(string: "The path is: \(req.path) \n")
-    //http://localhost:8181/v1/?bourbon=jimbeam&?bourbon=woodford
-    res.appendBody(string: "All the variables \(req.queryParams)")
-    res.completed()
-}
 
 routes.add(method: .get, uri: "/v1/horse", handler: {
     request, response in
@@ -225,7 +188,7 @@ server.addRoutes(routes)
 
 server.documentRoot = "./webroot"
 
-server.serverPort = 8181
+server.serverPort = 3000
 
 do {
   try server.start()

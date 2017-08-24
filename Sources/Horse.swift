@@ -13,31 +13,23 @@ class Horse: JSONConvertibleObject {
     
     static let registerName = "horse"
     
-    var breed: String = ""
-    var wons: Int = 0
-    var name: String = ""
-    
-    init(name: String, breed: String, wons: Int) {
-        self.name = name
-        self.breed = breed
-        self.wons = wons
-    }
+    var name = ""
+    var earning = ""
+    var speed = 0
     
     override func setJSONValues(_ values: [String : Any]) {
-        self.name = getJSONValue(named: "name", from: values, defaultValue: "nameless")
-        self.breed = getJSONValue(named: "breed", from: values, defaultValue: "unkown breed")
-        self.wons = getJSONValue(named: "wons", from: values, defaultValue: 0)
+        self.name = getJSONValue(named: "name", from: values, defaultValue: "")
+        self.earning = getJSONValue(named: "earning", from: values, defaultValue: "")
+        self.speed = getJSONValue(named: "speed", from: values, defaultValue: 0)
     }
     
     override func getJSONValues() -> [String : Any] {
         return [
             JSONDecoding.objectIdentifierKey: Horse.registerName,
             "name": self.name,
-            "breed": self.breed,
-            "wons": self.wons
+            "earning": self.earning,
+            "speed": self.speed
         ]
     }
     
-
 }
-
