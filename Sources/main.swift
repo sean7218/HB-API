@@ -28,16 +28,28 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
     request, response in
     
     let wdir = Dir("~/apps/HBApi/Sources/")
-    let json = File(wdir.path + "bourbon.json")
+    //let json = File(wdir.path + "bourbon.json")
+    let json = File("~/apps/HBApi/S")
     var result = ""
+    
     do {
         result = try json.readString()
     } catch {
         print(error)
     }
+   let out = try! result.jsonDecode()
+    
+    
     response.setHeader(.contentType, value: "application/json")
-    response.appendBody(string: result)
-    response.completed()
+    //response.appendBody(string: result)
+    do {
+        try response.setBody(json: out)
+            response.completed()
+    } catch {
+        print(error)
+    }
+
+
     
 })
 
