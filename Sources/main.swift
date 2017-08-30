@@ -7,7 +7,10 @@ import MongoDB
 
 let server = HTTPServer()
 
+
 var routes = Routes()
+
+
 
 JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
 JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
@@ -23,35 +26,32 @@ routes.add(method: .get, uri: "/", handler: {
     response.completed()
 })
 
+routes.add(method: .get, uri: "/public/**", handler: {
+    request, response in
+    StaticFileHandler(documentRoot: request.documentRoot)
+    .handleRequest(request: request, response: response)
+    
+    
+})
 
 routes.add(method: .get, uri: "/v1/bourbon", handler: {
     request, response in
     
     let wdir = Dir("~/apps/HBApi/Sources/")
     let json = File(wdir.path + "bourbon.json")
-    
-    //let json = File("")
     var result = ""
     
     do {
         result = try json.readString()
-    } catch {
-        print(error)
-    }
-   let out = try! result.jsonDecode()
-    
-    
-    response.setHeader(.contentType, value: "application/json")
-    //response.appendBody(string: result)
-    do {
+        let out = try result.jsonDecode()
         try response.setBody(json: out)
-            response.completed()
+        response.setHeader(.contentType, value: "application/json")
+        response.completed()
     } catch {
         print(error)
+        Log.error(message: "Error Condition \(error)")
     }
 
-
-    
 })
 
 
