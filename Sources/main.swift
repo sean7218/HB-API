@@ -26,10 +26,18 @@ routes.add(method: .get, uri: "/", handler: {
     response.completed()
 })
 
-routes.add(method: .get, uri: "/public/**", handler: {
+routes.add(method: .get, uri: "/files/**", handler: {
     request, response in
-    StaticFileHandler(documentRoot: request.documentRoot)
-    .handleRequest(request: request, response: response)
+    
+    // get the portion of the request path which was matched by the wildcard
+    request.path = request.urlVariables[routeTrailingWildcardKey]!
+    
+    // Initialize the StaticFileHandler with a documentRoot
+    let handler = StaticFileHandler(documentRoot: "/Users/mpb15sz/apps/HBApi/public")
+    
+    // trigger the handling of the request,
+    // with our documentRoot and modified path set
+    handler.handleRequest(request: request, response: response)
     
     
 })
