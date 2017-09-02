@@ -14,6 +14,18 @@
       "version": "2.0.10"
     },
     {
+      "package": "MongoDBStORM",
+      "reason": null,
+      "repositoryURL": "https://github.com/SwiftORM/MongoDB-Storm.git",
+      "version": "1.0.4"
+    },
+    {
+      "package": "PerfectCURL",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-CURL.git",
+      "version": "2.1.7"
+    },
+    {
       "package": "PerfectCrypto",
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Crypto.git",
@@ -38,6 +50,12 @@
       "version": "2.0.11"
     },
     {
+      "package": "PerfectLogger",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Logger.git",
+      "version": "1.1.0"
+    },
+    {
       "package": "PerfectNet",
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Net.git",
@@ -48,6 +66,30 @@
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Thread.git",
       "version": "2.0.12"
+    },
+    {
+      "package": "StORM",
+      "reason": null,
+      "repositoryURL": "https://github.com/SwiftORM/StORM.git",
+      "version": "1.3.0"
+    },
+    {
+      "package": "SwiftMoment",
+      "reason": null,
+      "repositoryURL": "https://github.com/iamjono/SwiftMoment.git",
+      "version": "0.9.1"
+    },
+    {
+      "package": "SwiftRandom",
+      "reason": null,
+      "repositoryURL": "https://github.com/iamjono/SwiftRandom.git",
+      "version": "0.2.5"
+    },
+    {
+      "package": "cURL",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-libcurl.git",
+      "version": "2.0.6"
     },
     {
       "package": "libmongoc",

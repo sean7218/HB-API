@@ -2,15 +2,18 @@ import PerfectLib
 import PerfectHTTP
 import PerfectHTTPServer
 
+import StORM
 import MongoDB
-
+import MongoDBStORM
 
 let server = HTTPServer()
 
 
 var routes = Routes()
 
-
+MongoDBConnection.host = "localhost"
+MongoDBConnection.database = "mydb"
+MongoDBConnection.port = 27017
 
 JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
 JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
@@ -77,83 +80,96 @@ routes.add(method: .get, uri: "/v1/horse", handler: {
 
 })
 
-routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
-    
-    // Open a connection
-    let client = try! MongoClient(uri: "mongodb://localhost:27017")
-    
-    // Set database, assuming HBApi exist
-    let db = client.getDatabase(name: "mydb")
-    
-    // Define collection
-    guard let collection = db.getCollection(name: "users") else {
-        return
-    }
-    
-    // Here we clean up our connection, by backing out in reverse order created
-    defer {
-        collection.close()
-        db.close()
-        client.close()
-    }
-    
-    // Peform "find" on the previous defined collection
-    let query = BSON(map: ["username":"Lucy"])
-    let query2 = BSON(map: ["email":"lucy5@gmail.com"])
-    let query3 = BSON()
-    let find = collection.find(query: query3)
-    
-    // Initialize empty array to receive formatted results
-    var arr = [String]()
-    
-    // The "find" cursor is a type MongoCursor, which is iterable
-    for x in find! {
-        arr.append(x.asString)
+routes.add(method: .post, uri: "/v1/horse", handler: {
+    request, response in
+    do {
+        let client = try MongoClient(uri: "mongodb://localhost:27017")
+        let db = client.getDatabase(name: "mydb")
+        let col = db.getCollection(name: "horse")
         
+        
+    } catch {
+        Log.error(message: error as! String)
     }
-    
-    // return a formmated JSON array
-    let returnning = "\"Data\":[\(arr.joined(separator: ","))]"
-    response.setBody(string: returnning)
-    .completed()
-    
 })
 
-routes.add(method: .get, uri: "/v1/mongo/{name}", handler: {
-    request, response in
-    let client = try! MongoClient(uri: "mongodb://localhost")
-    let db = client.getDatabase(name: "mydb")
-    let col = db.getCollection(name: "users")
-    defer {
-        col?.close()
-        db.close()
-        client.close()
-    }
-    let query = BSON()
-    query.append(key: "email", string: "lucy1@gmail.com")
-    
-    let arr = col?.find(query: query)
+routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
 
-    // define a returning file
-    var json = [[String: Any]]()
-    var users = [User]()
-    for i in arr! {
+    do {
         
-
-        guard let user = try! i.asString.jsonDecode() as? User else {
+        // Open a connection
+        let client = try MongoClient(uri: "mongodb://localhost:27017")
+        
+        // Set database, assuming HBApi exist
+        let db = client.getDatabase(name: "mydb")
+        
+        let col = db.getCollection(name: "mycol")
+        
+        // Define collection
+        guard let collection = db.getCollection(name: "user") else {
             return
         }
         
-        users.append(user)
         
-        //let user = try! i.asString.jsonDecode() as! [String: Any]
-        //json.append(user)
+        
+        // Here we clean up our connection, by backing out in reverse order created
+        defer {
+            collection.close()
+            db.close()
+            client.close()
+        }
+        
+        // Peform "find" on the previous defined collection
+        let query = BSON(map: ["username":"Lucy"])
+        let query2 = BSON(map: ["email":"lucy5@gmail.com"])
+        let query3 = BSON()
+        let find = collection.find(query: query3)
+        
+        // Initialize empty array to receive formatted results
+        var arr = [String]()
+        
+        // The "find" cursor is a type MongoCursor, which is iterable
+        for x in find! {
+            arr.append(x.asString)
+            
+        }
+        
+        // return a formmated JSON array
+        let returnning = "\"Data\":[\(arr.joined(separator: ","))]"
+        response.setBody(string: returnning)
+            .completed()
+        
+    } catch {
+        Log.error(message: error as! String)
     }
+
     
-    try! response.setBody(json: users)
-    .completed()
 })
 
+routes.add(method: .post, uri: "/v1/mongo/save", handler: {
+    request, response in
+    
+    
+    // Standard Save
+    do {
+        let _ = try saveNew(name: "Jim Beam")
+    } catch {
+        print("1. \(error)")
+    }
+    response.completed()
+})
+
+routes.add(method: .get, uri: "/v1/mongo/find", handler: {
+    request, response in
+    
+    // perform a find
+    do {
+        let _ = try findByString()
+    } catch {
+        print("Error in findByString: \(error)")
+    }
+    response.completed()
+})
 
 struct Filter1: HTTPRequestFilter {
     func filter(request: HTTPRequest, response: HTTPResponse, callback: (HTTPRequestFilterResult) -> ()) {
