@@ -85,7 +85,15 @@ routes.add(method: .post, uri: "/v1/horse", handler: {
     do {
         let client = try MongoClient(uri: "mongodb://localhost:27017")
         let db = client.getDatabase(name: "mydb")
-        let col = db.getCollection(name: "horse")
+        guard let collection = db.getCollection(name: "horse") else { return }
+        
+        defer {
+            collection.close()
+            db.close()
+            client.close()
+        }
+        
+
         
         
     } catch {
@@ -146,8 +154,9 @@ routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
     
 })
 
-routes.add(method: .post, uri: "/v1/mongo/save", handler: {
+routes.add(method: .post, uri: "/v1/mongo/save/{name}", handler: {
     request, response in
+    
     
     
     // Standard Save
