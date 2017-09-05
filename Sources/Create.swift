@@ -44,10 +44,11 @@ func saveNewHorse(name: String, earning: String, speed: Int) throws -> HorseORM 
 func saveNewBourbon(name: String, price: Double, proof: Double, rating: Int) throws -> BourbonORM {
     let obj = BourbonORM()
     obj.id = obj.newUUID()
+    
     obj.name = name
-    //obj.price = price
-    //obj.proof = proof
-    //obj.rating = rating
+    obj.price = price
+    obj.proof = proof
+    obj.rating = rating
     
     
     do {

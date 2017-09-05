@@ -41,8 +41,8 @@ class BourbonORM: MongoDBStORM {
     var id: String = ""
     var name: String = ""
     var proof: Double = 0.0
-    //var price: Double = 0.0
-    //var rating: Int = 0
+    var price: Double = 0.0
+    var rating: Int = 0
     
     override init() {
         super.init()
@@ -50,16 +50,15 @@ class BourbonORM: MongoDBStORM {
         _collection = "bourbon"
     }
     
-
-
     
     override func to(_ this: StORMRow) {
-        id = this.data["_id"] as? String ?? ""
+        let tem = this.data["_id"] as? [String: Any] ?? nil
+        id = tem?["$oid"] as? String ?? ""
         name = this.data["name"] as? String ?? ""
         proof = this.data["proof"] as? Double ?? 0.0
-        //price = this.data["price"] as? Double ?? 0.0
-        //rating = this.data["rating"] as? Int ?? 0
-        
+        price = this.data["price"] as? Double ?? 0.0
+        let tem1 = this.data["rating"] as? Double ?? 0.0
+        rating = Int(tem1)
     }
     
     func rows() -> [BourbonORM] {
@@ -82,6 +81,7 @@ class HorseORM: MongoDBStORM {
     override init() {
         super.init()
         _collection = "horse"
+        _database = "mydb"
     }
     
     override func to(_ this: StORMRow) {

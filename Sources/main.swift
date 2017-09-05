@@ -8,7 +8,6 @@ import MongoDBStORM
 
 let server = HTTPServer()
 
-
 var routes = Routes()
 
 MongoDBConnection.host = "localhost"
@@ -65,7 +64,7 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
 
 })
 
-routes.add(method: .get, uri: "/v1/bourbon/{name}", handler: {
+routes.add(method: .get, uri: "/v1/bourbon/{name}{rating}", handler: {
     request, response in
     let params = request.queryParams
     var name: String?
@@ -77,15 +76,28 @@ routes.add(method: .get, uri: "/v1/bourbon/{name}", handler: {
             case "name": name = params[i].1
             case "price": price = Double(params[i].1)
             case "rating": rating = Int(params[i].1)
-            case "proof":
-                proof = Double(params[i].1)
-                proof?.round(FloatingPointRoundingRule.towardZero)
+            case "proof": proof = Double(params[i].1)
             default: break
         }
     }
-
+    
+    if let paramName = request.param(name: "name")
+    {
+        print("Found Name Param : \(paramName)")
+    }
+    
+    if let paramRating = request.param(name: "rating") {
+        print("Found Rating Param : \(paramRating)")
+    }
+    
     do {
-        let bourbon = try findBourbon(name: name, price: price, proof: proof, rating: rating)
+        let bourbon = try findBourbon(name: name, rating: rating)
+        let out = Bourbon()
+        out.name = bourbon.name
+        out.rating = bourbon.rating
+        out.price = bourbon.price
+        out.proof = bourbon.proof
+        try response.setBody(json: out)
         response.completed()
     } catch {
         print(error)
@@ -96,8 +108,31 @@ routes.add(method: .get, uri: "/v1/bourbon/{name}", handler: {
     
 })
 
+routes.add(method: .post, uri: "/v1/bourbon/save", handler: {
+    request, response in
+    if let name = request.param(name: "name", defaultValue: ""),
+        let price = request.param(name: "price",defaultValue: "0"),
+        let proof = request.param(name: "proof", defaultValue: "0"),
+        let rating = request.param(name: "rating",defaultValue: "0")
+    {
+        do {
+            let _ = try saveNewBourbon(name: name, price: Double(price)!, proof: Double(proof)!, rating: Int(rating)!)
+            response.setBody(string: "Success Saved")
+            response.completed()
+        } catch {
+            print(error)
+        }
 
-routes.add(method: .get, uri: "/v1/horse", handler: {
+    } else {
+        print("The parameter is missing")
+        response.completed(status: .badRequest)
+    }
+
+
+
+})
+
+routes.add(method: .get, uri: "/v1/horse/{name}", handler: {
     request, response in
 
     do {
@@ -109,7 +144,7 @@ routes.add(method: .get, uri: "/v1/horse", handler: {
 
 })
 
-routes.add(method: .post, uri: "/v1/horse", handler: {
+routes.add(method: .post, uri: "/v1/horse/save", handler: {
     request, response in
     do {
         let client = try MongoClient(uri: "mongodb://localhost:27017")
@@ -181,20 +216,6 @@ routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
     
 })
 
-routes.add(method: .post, uri: "/v1/mongo/save/{name}", handler: {
-    request, response in
-    
-    let name = request.param(name: "name")
-    
-    // Standard Save
-    do {
-        let _ = try saveNew(name: name!)
-    } catch {
-        print("1. \(error)")
-    }
-    response.completed()
-})
-
 routes.add(method: .get, uri: "/v1/mongo/find/{name}", handler: {
     request, response in
     
@@ -210,8 +231,24 @@ routes.add(method: .get, uri: "/v1/mongo/find/{name}", handler: {
         response.completed(status: .badRequest)
     }
     
-
+    
 })
+
+routes.add(method: .post, uri: "/v1/mongo/save/{name}", handler: {
+    request, response in
+    
+    let name = request.param(name: "name")
+    
+    // Standard Save
+    do {
+        let _ = try saveNew(name: name!)
+    } catch {
+        print("1. \(error)")
+    }
+    response.completed()
+})
+
+
 
 struct Filter1: HTTPRequestFilter {
     func filter(request: HTTPRequest, response: HTTPResponse, callback: (HTTPRequestFilterResult) -> ()) {

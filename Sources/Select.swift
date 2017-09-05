@@ -25,7 +25,7 @@ func findByString(name: String) throws -> () {
 }
 
 
-func findHorseByName(name: String) throws -> () {
+func findHorse(name: String) throws -> () {
     
     let getObj = HorseORM()
     var findObj = [String: Any]()
@@ -36,18 +36,16 @@ func findHorseByName(name: String) throws -> () {
     } catch {
         throw error
     }
-    print("Finding HorseORM object name \(String(describing: findObj["name"]))")
+    print("Finding HorseORM object name: \(getObj.name) and speed: \(getObj.speed) and earning: \(getObj.earning)")
 }
 
 
-func findBourbon(name: String?, price: Double?, proof: Double?, rating: Int?) throws -> BourbonORM {
+func findBourbon(name: String?, rating: Int?) throws -> BourbonORM {
     
     let getObj = BourbonORM()
 
     var findObj = [String: Any]()
     findObj["name"] = name
-    findObj["proof"] = proof
-    findObj["price"] = price
     findObj["rating"] = rating
     
     do {
@@ -55,6 +53,23 @@ func findBourbon(name: String?, price: Double?, proof: Double?, rating: Int?) th
     } catch {
         throw error
     }
-    print("Finding BourbonORM object id: \(getObj.id) and name \(getObj.name) and proof \(getObj.proof)")
+    print("Finding BourbonORM object id: \(getObj.id) and name \(getObj.name) and rating \(getObj.rating)")
     return getObj
+}
+
+extension Double {
+    func trim(digits: Int) -> Double {
+        let d = digits
+        if digits > 0 {
+            let s = 10 * Double(d)
+            let v = s * self
+            let q = v.rounded()
+            let e = q/s
+            
+            return e
+        } else {
+            return self.rounded()
+        }
+
+    }
 }
