@@ -65,7 +65,36 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
 
 })
 
+routes.add(method: .get, uri: "/v1/bourbon/{name}", handler: {
+    request, response in
+    let params = request.queryParams
+    var name: String?
+    var price: Double?
+    var rating: Int?
+    var proof: Double?
+    for i in 0..<params.count {
+        switch params[i].0 {
+            case "name": name = params[i].1
+            case "price": price = Double(params[i].1)
+            case "rating": rating = Int(params[i].1)
+            case "proof":
+                proof = Double(params[i].1)
+                proof?.round(FloatingPointRoundingRule.towardZero)
+            default: break
+        }
+    }
 
+    do {
+        let bourbon = try findBourbon(name: name, price: price, proof: proof, rating: rating)
+        response.completed()
+    } catch {
+        print(error)
+        response.completed(status: .badRequest)
+        
+    }
+
+    
+})
 
 
 routes.add(method: .get, uri: "/v1/horse", handler: {
@@ -92,8 +121,6 @@ routes.add(method: .post, uri: "/v1/horse", handler: {
             db.close()
             client.close()
         }
-        
-
         
         
     } catch {
@@ -157,27 +184,33 @@ routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
 routes.add(method: .post, uri: "/v1/mongo/save/{name}", handler: {
     request, response in
     
-    
+    let name = request.param(name: "name")
     
     // Standard Save
     do {
-        let _ = try saveNew(name: "Jim Beam")
+        let _ = try saveNew(name: name!)
     } catch {
         print("1. \(error)")
     }
     response.completed()
 })
 
-routes.add(method: .get, uri: "/v1/mongo/find", handler: {
+routes.add(method: .get, uri: "/v1/mongo/find/{name}", handler: {
     request, response in
     
-    // perform a find
-    do {
-        let _ = try findByString()
-    } catch {
-        print("Error in findByString: \(error)")
+    if let name = request.param(name: "name") {
+        // perform a find
+        do {
+            let _ = try findByString(name: name)
+        } catch {
+            print("Error in findByString: \(error)")
+        }
+        response.completed()
+    } else {
+        response.completed(status: .badRequest)
     }
-    response.completed()
+    
+
 })
 
 struct Filter1: HTTPRequestFilter {
