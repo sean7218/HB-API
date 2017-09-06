@@ -25,7 +25,7 @@ func findByString(name: String) throws -> () {
 }
 
 
-func findHorse(name: String) throws -> () {
+func findHorse(name: String) throws -> HorseORM {
     
     let getObj = HorseORM()
     var findObj = [String: Any]()
@@ -37,8 +37,21 @@ func findHorse(name: String) throws -> () {
         throw error
     }
     print("Finding HorseORM object name: \(getObj.name) and speed: \(getObj.speed) and earning: \(getObj.earning)")
+    return getObj
 }
 
+func isHorseExist(name: String) throws -> Bool {
+    do {
+        let horse = try findHorse(name: name)
+        if horse.id.characters.count > 0 || horse.name.characters.count > 0 {
+            return true
+        } else {
+            return false
+        }
+    } catch {
+        throw error
+    }
+}
 
 func findBourbon(name: String?, rating: Int?) throws -> BourbonORM {
     
@@ -57,19 +70,19 @@ func findBourbon(name: String?, rating: Int?) throws -> BourbonORM {
     return getObj
 }
 
-extension Double {
-    func trim(digits: Int) -> Double {
-        let d = digits
-        if digits > 0 {
-            let s = 10 * Double(d)
-            let v = s * self
-            let q = v.rounded()
-            let e = q/s
-            
-            return e
+func isBourbonExist(name: String) throws -> Bool {
+    do {
+        let b = try findBourbon(name: name, rating: nil)
+        if b.id.characters.count > 1 || b.name.characters.count > 1 {
+            return true
         } else {
-            return self.rounded()
+            return false
         }
-
+    } catch {
+        throw error
     }
 }
+
+
+
+

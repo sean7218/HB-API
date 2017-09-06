@@ -73,3 +73,18 @@ func saveNewUser(name: String) throws -> UserORM {
     print("'saveNewUser' Object Created with id \(obj.id)")
     return obj
 }
+enum ValidationError: Error {
+    case incorrectType
+
+}
+extension String {
+    func validate() throws -> Bool {
+        if Double(self) != nil {
+            return true
+        } else if Int(self) != nil {
+            return true
+        } else {
+            throw ValidationError.incorrectType
+        }
+    }
+}

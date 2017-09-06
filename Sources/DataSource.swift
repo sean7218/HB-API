@@ -52,8 +52,14 @@ class BourbonORM: MongoDBStORM {
     
     
     override func to(_ this: StORMRow) {
-        let tem = this.data["_id"] as? [String: Any] ?? nil
-        id = tem?["$oid"] as? String ?? ""
+        if let tem = this.data["_id"] as? [String: Any]{
+            id = tem["$oid"] as? String ?? ""
+        } else if let tem = this.data["_id"] as? String {
+            id = tem
+        } else {
+            id = ""
+        }
+
         name = this.data["name"] as? String ?? ""
         proof = this.data["proof"] as? Double ?? 0.0
         price = this.data["price"] as? Double ?? 0.0
@@ -127,3 +133,4 @@ class UserORM: MongoDBStORM {
         return rows
     }
 }
+

@@ -6,6 +6,8 @@ import StORM
 import MongoDB
 import MongoDBStORM
 
+
+
 let server = HTTPServer()
 
 var routes = Routes()
@@ -64,72 +66,84 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
 
 })
 
-routes.add(method: .get, uri: "/v1/bourbon/{name}{rating}", handler: {
+routes.add(method: .get, uri: "/v1/bourbon/", handler: {
     request, response in
-    let params = request.queryParams
-    var name: String?
-    var price: Double?
-    var rating: Int?
-    var proof: Double?
-    for i in 0..<params.count {
-        switch params[i].0 {
-            case "name": name = params[i].1
-            case "price": price = Double(params[i].1)
-            case "rating": rating = Int(params[i].1)
-            case "proof": proof = Double(params[i].1)
-            default: break
-        }
-    }
-    
-    if let paramName = request.param(name: "name")
+    if let name = request.param(name: "name")
     {
-        print("Found Name Param : \(paramName)")
-    }
-    
-    if let paramRating = request.param(name: "rating") {
-        print("Found Rating Param : \(paramRating)")
-    }
-    
-    do {
-        let bourbon = try findBourbon(name: name, rating: rating)
-        let out = Bourbon()
-        out.name = bourbon.name
-        out.rating = bourbon.rating
-        out.price = bourbon.price
-        out.proof = bourbon.proof
-        try response.setBody(json: out)
+        do {
+            if (try isBourbonExist(name: name)) {
+                let bourbon = try findBourbon(name: name, rating: nil)
+                let out = Bourbon()
+                out.name = bourbon.name
+                out.rating = bourbon.rating
+                out.price = bourbon.price
+                out.proof = bourbon.proof
+                try response.setBody(json: out)
+                response.completed()
+            } else {
+                try response.setBody(json: ["error": "object doesn't exist"])
+                response.completed()
+            }
+        } catch {
+            response.status = HTTPResponseStatus.custom(code: 400, message: "Error: \(error)")
+            response.completed()
+        }
+    } else {
+        response.status = HTTPResponseStatus.custom(code: 400, message: "Missing Parameter")
         response.completed()
-    } catch {
-        print(error)
-        response.completed(status: .badRequest)
-        
     }
-
-    
 })
 
 routes.add(method: .post, uri: "/v1/bourbon/save", handler: {
     request, response in
-    if let name = request.param(name: "name", defaultValue: ""),
-        let price = request.param(name: "price",defaultValue: "0"),
-        let proof = request.param(name: "proof", defaultValue: "0"),
-        let rating = request.param(name: "rating",defaultValue: "0")
+    if let name = request.param(name: "name"),
+        let price = request.param(name: "price"),
+        let proof = request.param(name: "proof"),
+        let rating = request.param(name: "rating")
     {
         do {
-            let _ = try saveNewBourbon(name: name, price: Double(price)!, proof: Double(proof)!, rating: Int(rating)!)
-            response.setBody(string: "Success Saved")
-            response.completed()
+            if (try isBourbonExist(name: name)) {
+                try response.setBody(json: ["Error":"Bourbon Name already exist"])
+                response.completed()
+            } else {
+                let _ = try rating.validate()
+                let _ = try price.validate()
+                let _ = try proof.validate()
+                let _ = try saveNewBourbon(name: name,
+                                           price: Double(price)!,
+                                           proof: Double(proof)!,
+                                           rating: Int(rating)!)
+                response.setBody(string: "Saving Sucess")
+                response.completed()
+            }
         } catch {
-            print(error)
+            response.status = HTTPResponseStatus.custom(code: 400, message: "Error: \(error.localizedDescription)")
+            response.completed()
         }
-
     } else {
-        print("The parameter is missing")
-        response.completed(status: .badRequest)
+        response.status = HTTPResponseStatus.custom(code: 400, message: "Parameter Error")
+        response.completed()
     }
+})
 
+routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
+    request, response in
+    if let name = request.param(name: "name") {
+        do {
+            guard let price = request.param(name: "price") else { throw ServerError.missingUpdateParameter }
+            let _ = try price.validate()
+            let _ = try updateBourbon(name: name, price: Double(price)!)
+            response.setBody(string: "Updated the bourbon")
+            response.completed()
 
-
+        } catch {
+            response.status = HTTPResponseStatus.custom(code: 400, message: "Error: \(error)")
+            response.completed()
+        }
+    } else {
+        response.status = HTTPResponseStatus.custom(code: 400, message: "Parameter Error")
+        response.completed()
+    }
 })
 
 routes.add(method: .get, uri: "/v1/horse/{name}", handler: {
