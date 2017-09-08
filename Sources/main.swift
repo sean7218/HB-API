@@ -5,7 +5,7 @@ import PerfectHTTPServer
 import StORM
 import MongoDB
 import MongoDBStORM
-
+import MySQLStORM
 
 
 let server = HTTPServer()
@@ -15,6 +15,12 @@ var routes = Routes()
 MongoDBConnection.host = "localhost"
 MongoDBConnection.database = "mydb"
 MongoDBConnection.port = 27017
+
+MySQLConnector.host = "127.0.0.1"
+MySQLConnector.database = "mydb"
+MySQLConnector.username = "sean7218"
+MySQLConnector.password = "123"
+MySQLConnector.port = 3306
 
 JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
 JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
@@ -262,6 +268,18 @@ routes.add(method: .post, uri: "/v1/mongo/save/{name}", handler: {
     response.completed()
 })
 
+routes.add(method: .get, uri: "/v2/race", handler: {
+    request, response in
+    
+    do {
+        let _ = try findRace(name: "Oaks")
+        response.completed()
+    } catch {
+        print(error)
+        response.completed(status: .badRequest)
+    }
+
+})
 
 
 struct Filter1: HTTPRequestFilter {

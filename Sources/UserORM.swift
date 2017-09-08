@@ -1,44 +1,36 @@
 //
-//  DataSource.swift
+//  UserORM.swift
 //  HBApi
 //
-//  Created by Sean Zhang on 9/2/17.
+//  Created by Sean Zhang on 9/8/17.
 //
 //
 
-import Foundation
-import StORM
 import MongoDBStORM
+import StORM
 
-class DataSource: MongoDBStORM {
-    
+class UserORM: MongoDBStORM {
     var id: String = ""
     var name: String = ""
     
     override init() {
         super.init()
-        _collection = "dataSource"
+        _collection = "user"
     }
     
     
     override func to(_ this: StORMRow) {
-        id = this.data["_id"] as? String ?? ""
         name = this.data["name"] as? String ?? ""
+        
     }
     
-    func rows() -> [DataSource] {
-        var rows = [DataSource]()
+    func rows() throws -> [UserORM] {
+        var rows = [UserORM]()
         for i in 0..<self.results.rows.count {
-            let row = DataSource()
+            let row = UserORM()
             row.to(self.results.rows[i])
             rows.append(row)
         }
         return rows
     }
 }
-
-
-
-
-
-
