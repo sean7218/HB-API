@@ -272,7 +272,7 @@ routes.add(method: .get, uri: "/v2/race", handler: {
     request, response in
     
     do {
-        let _ = try findRace(name: "Oaks")
+        try findAllRaces()
         response.completed()
     } catch {
         print(error)
@@ -281,6 +281,24 @@ routes.add(method: .get, uri: "/v2/race", handler: {
 
 })
 
+routes.add(method: .get, uri: "/v2/race/{name}", handler: {
+    request, response in
+    if let name = request.param(name: "name") {
+        do {
+            let _ = try findRace(name: name)
+            response.completed()
+        } catch {
+            response.status = HTTPResponseStatus.custom(code: 400, message: "Error: \(error)")
+            response.completed()
+        }
+
+    } else {
+        response.status = HTTPResponseStatus.custom(code: 400, message: "Bad Request: No Name Parameter")
+        response.completed()
+    }
+    
+
+})
 
 struct Filter1: HTTPRequestFilter {
     func filter(request: HTTPRequest, response: HTTPResponse, callback: (HTTPRequestFilterResult) -> ()) {

@@ -43,14 +43,26 @@ class Race: MySQLStORM {
 func findRace(name: String) throws  -> Race {
     let getRace = Race()
     do {
-        try getRace.select(whereclause: "name = ?", params: ["Oaks"], orderby: ["id"])
+        try getRace.select(whereclause: "name = ?", params: [name], orderby: ["id"])
         
         for row in getRace.rows() {
-            print("getting the race right now \(row.first) : \(row.id) : \(getRace.results)")
+            print(" First: \(row.first) : Second: \(row.second) : Third: \(row.third)")
         }
     } catch {
         print("error for select from database: \(error)")
         throw error
     }
     return getRace
+}
+
+func findAllRaces() throws -> Void {
+    let race = Race()
+    do {
+        try race.findAll()
+        for i in race.rows() {
+            print("FindAllRace: \(i.first)")
+        }
+    } catch {
+        throw error
+    }
 }
