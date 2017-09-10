@@ -74,6 +74,24 @@
       "version": "2.1.18"
     },
     {
+      "package": "PerfectRepeater",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Repeater.git",
+      "version": "1.0.1"
+    },
+    {
+      "package": "PerfectSession",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Session.git",
+      "version": "1.4.0"
+    },
+    {
+      "package": "PerfectSessionMySQL",
+      "reason": null,
+      "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Session-MySQL.git",
+      "version": "1.1.3"
+    },
+    {
       "package": "PerfectThread",
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-Thread.git",
@@ -96,6 +114,12 @@
       "reason": null,
       "repositoryURL": "https://github.com/iamjono/SwiftRandom.git",
       "version": "0.2.5"
+    },
+    {
+      "package": "SwiftString",
+      "reason": null,
+      "repositoryURL": "https://github.com/iamjono/SwiftString.git",
+      "version": "2.0.3"
     },
     {
       "package": "cURL",
