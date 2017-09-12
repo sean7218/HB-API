@@ -6,15 +6,21 @@
 //
 //
 
+import PerfectLib
 import MongoDBStORM
 import StORM
 
-class BourbonORM: MongoDBStORM {
+class BourbonORM: MongoDBStORM{
+    
+    static let registerName = "bourbon"
+    
+    
     var id: String = ""
     var name: String = ""
     var proof: Double = 0.0
     var price: Double = 0.0
     var rating: Int = 0
+    var imageUrl: String = ""
     
     override init() {
         super.init()
@@ -37,6 +43,7 @@ class BourbonORM: MongoDBStORM {
         price = this.data["price"] as? Double ?? 0.0
         let tem1 = this.data["rating"] as? Double ?? 0.0
         rating = Int(tem1)
+        imageUrl = this.data["imageUrl"] as? String ?? ""
     }
     
     func rows() -> [BourbonORM] {
@@ -48,4 +55,9 @@ class BourbonORM: MongoDBStORM {
         }
         return rows
     }
+    
+
 }
+
+
+

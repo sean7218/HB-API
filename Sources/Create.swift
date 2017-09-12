@@ -11,20 +11,6 @@ import StORM
 import MongoDBStORM
 
 
-func saveNew(name: String) throws -> DataSource {
-    let obj = DataSource()
-    obj.id = obj.newUUID()
-    obj.name = name
-    
-    do {
-        try obj.save()
-    } catch {
-        throw error
-    }
-    print("'saveNew' - Object Created with id \(obj.id)")
-    return obj
-}
-
 func saveNewHorse(name: String, earning: String, speed: Int) throws -> HorseORM {
     let obj = HorseORM()
     obj.id = obj.newUUID()

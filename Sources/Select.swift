@@ -10,19 +10,6 @@ import Foundation
 import StORM
 import MongoDBStORM
 
-func findByString(name: String) throws -> () {
-    
-    let getObj = DataSource()
-    var findObj = [String: Any]()
-    findObj["name"] = name
-    
-    do {
-        try getObj.find(findObj)
-    } catch {
-        throw error
-    }
-    print("Finding object name \(String(describing: findObj["name"]))")
-}
 
 
 func findHorse(name: String) throws -> HorseORM {

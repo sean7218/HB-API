@@ -13,6 +13,17 @@ let server = HTTPServer()
 
 var routes = Routes()
 
+MongoDBConnection.host = "localhost"
+MongoDBConnection.database = "mydb"
+MongoDBConnection.port = 27017
+
+MySQLConnector.host = "127.0.0.1"
+MySQLConnector.database = "mydb"
+MySQLConnector.username = "sean7218"
+MySQLConnector.password = "123"
+MySQLConnector.port = 3306
+
+
 SessionConfig.name = "loginSesson"
 SessionConfig.idle = 86400
 SessionConfig.cookieDomain = "localhost"
@@ -27,17 +38,6 @@ MySQLSessionConnector.username = "sean7218"
 MySQLSessionConnector.password = "123"
 MySQLSessionConnector.database = "mydb"
 MySQLSessionConnector.table = "sessions"
-
-
-MongoDBConnection.host = "localhost"
-MongoDBConnection.database = "mydb"
-MongoDBConnection.port = 27017
-
-MySQLConnector.host = "127.0.0.1"
-MySQLConnector.database = "mydb"
-MySQLConnector.username = "sean7218"
-MySQLConnector.password = "123"
-MySQLConnector.port = 3306
 
 
 
@@ -90,6 +90,29 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
     } catch {
         print(error)
         Log.error(message: "Error Condition \(error)")
+    }
+
+})
+
+routes.add(method: .get, uri: "/v1/bourbon/getAll/", handler: {
+    request, response in
+    var out = [Bourbon]()
+    do {
+        let obj = BourbonORM()
+        try obj.find()
+        for b in obj.rows() {
+            let bourbon = Bourbon()
+            bourbon.name = b.name
+            bourbon.price = b.price
+            bourbon.proof = b.proof
+            bourbon.rating = b.rating
+            out.append(bourbon)
+        }
+        try response.setBody(json: out)
+        response.completed()
+    } catch {
+        print(error)
+        response.completed(status: .badRequest)
     }
 
 })
@@ -174,89 +197,6 @@ routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
     }
 })
 
-routes.add(method: .get, uri: "/v1/horse/{name}", handler: {
-    request, response in
-
-    do {
-        try response.setBody(json: ["JIM BEAM":"Fda"])
-    } catch {
-        print(error)
-    }
-    response.completed()
-
-})
-
-routes.add(method: .post, uri: "/v1/horse/save", handler: {
-    request, response in
-    do {
-        let client = try MongoClient(uri: "mongodb://localhost:27017")
-        let db = client.getDatabase(name: "mydb")
-        guard let collection = db.getCollection(name: "horse") else { return }
-        
-        defer {
-            collection.close()
-            db.close()
-            client.close()
-        }
-        
-        
-    } catch {
-        Log.error(message: error as! String)
-    }
-})
-
-routes.add(method: .get, uri: "/v1/mongo", handler: { request, response in
-
-    do {
-        
-        // Open a connection
-        let client = try MongoClient(uri: "mongodb://localhost:27017")
-        
-        // Set database, assuming HBApi exist
-        let db = client.getDatabase(name: "mydb")
-        
-        let col = db.getCollection(name: "mycol")
-        
-        // Define collection
-        guard let collection = db.getCollection(name: "user") else {
-            return
-        }
-        
-        
-        
-        // Here we clean up our connection, by backing out in reverse order created
-        defer {
-            collection.close()
-            db.close()
-            client.close()
-        }
-        
-        // Peform "find" on the previous defined collection
-        let query = BSON(map: ["username":"Lucy"])
-        let query2 = BSON(map: ["email":"lucy5@gmail.com"])
-        let query3 = BSON()
-        let find = collection.find(query: query3)
-        
-        // Initialize empty array to receive formatted results
-        var arr = [String]()
-        
-        // The "find" cursor is a type MongoCursor, which is iterable
-        for x in find! {
-            arr.append(x.asString)
-            
-        }
-        
-        // return a formmated JSON array
-        let returnning = "\"Data\":[\(arr.joined(separator: ","))]"
-        response.setBody(string: returnning)
-            .completed()
-        
-    } catch {
-        Log.error(message: error as! String)
-    }
-
-    
-})
 
 routes.add(method: .get, uri: "/v2/race", handler: {
     request, response in
