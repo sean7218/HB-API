@@ -5,9 +5,10 @@
 //  Created by Sean Zhang on 9/8/17.
 //
 //
-
+import Foundation
 import StORM
 import MySQLStORM
+
 
 class Race: MySQLStORM {
     var id: Int = 0
@@ -66,3 +67,5 @@ func findAllRaces() throws -> Void {
         throw error
     }
 }
+
+

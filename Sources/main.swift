@@ -6,8 +6,10 @@ import StORM
 import MongoDB
 import MongoDBStORM
 import MySQLStORM
-import PerfectSession
-import PerfectSessionMySQL
+
+import PerfectTurnstileMySQL
+import TurnstilePerfect
+
 
 let server = HTTPServer()
 
@@ -23,23 +25,24 @@ MySQLConnector.username = "sean7218"
 MySQLConnector.password = "123"
 MySQLConnector.port = 3306
 
+let authStore = AuthAccount()
+do {
+    try authStore.setup()
+} catch {
+    print(error)
+}
 
-SessionConfig.name = "loginSesson"
-SessionConfig.idle = 86400
-SessionConfig.cookieDomain = "localhost"
-SessionConfig.IPAddressLock = true
-SessionConfig.userAgentLock = true
-SessionConfig.purgeInterval = 3600
+tokenStore = AccessTokenStore()
+do {
+    try tokenStore?.setup()
+} catch {
+    print(error)
+}
 
+let pturnstile = TurnstilePerfectRealm()
 
-MySQLSessionConnector.host = "localhost"
-MySQLSessionConnector.port = 3306
-MySQLSessionConnector.username = "sean7218"
-MySQLSessionConnector.password = "123"
-MySQLSessionConnector.database = "mydb"
-MySQLSessionConnector.table = "sessions"
-
-
+let authJSONRoutes = makeJSONAuthRoutes("/api/v1")
+server.addRoutes(authJSONRoutes)
 
 JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
 JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
@@ -197,7 +200,6 @@ routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
     }
 })
 
-
 routes.add(method: .get, uri: "/v2/race", handler: {
     request, response in
     
@@ -230,28 +232,8 @@ routes.add(method: .get, uri: "/v2/race/{name}", handler: {
 
 })
 
-routes.add(method: .get, uri: "/v2/session/test", handler: {
-    request, response in
-    
-    let rand = UUID()
-    request.session?.data["UUID-1"] = rand.string
-    
-    var data = ""
-    do {
-        data = try request.session?.data.jsonEncodedString() ?? ""
-    } catch {
-        print(error)
-    }
-    var body = "<p>Your Session ID is: <code>\(String(describing: request.session?.token))</code></p>"
-    body += "<p>Your Session State is: <code>\(String(describing: request.session?._state))</code></p>"
-    body += "<p>Your Session Data is: <code>\(data)))</p></code>"
-    body += "<p>Your IP Address is: <code>\(String(describing: request.session?.ipaddress))</p></code>"
-    response.setBody(string: body)
-    response.completed()
 
-})
 
-let sessionDriver = SessionMySQLDriver()
 
 struct Filter1: HTTPRequestFilter {
     func filter(request: HTTPRequest, response: HTTPResponse, callback: (HTTPRequestFilterResult) -> ()) {
@@ -289,34 +271,16 @@ struct Filter4: HTTPResponseFilter {
     }
 }
 
-struct Filter5: HTTPRequestFilter {
-    func filter(request: HTTPRequest, response: HTTPResponse, callback: (HTTPRequestFilterResult) -> ()) {
-        //
-        print("Filter Session Request")
-        sessionDriver.requestFilter.0.filter(request: request, response: response, callback: callback)
-    }
-}
 
-struct Filter6: HTTPResponseFilter {
-    
-    func filterHeaders(response: HTTPResponse, callback: (HTTPResponseFilterResult) -> ()) {
-        //
-        print("Filter Session Response Headers")
-        sessionDriver.responseFilter.0.filterHeaders(response: response, callback: callback)
-    }
-    func filterBody(response: HTTPResponse, callback: (HTTPResponseFilterResult) -> ()) {
-        //
-        print("Filter Session Response Body")
-        sessionDriver.responseFilter.0.filterBody(response: response, callback: callback)
-    }
-}
+
 
 let requestFilters: [(HTTPRequestFilter, HTTPFilterPriority)] = {
     let filters: [(HTTPRequestFilter, HTTPFilterPriority)] =
         [
-            (Filter1(), HTTPFilterPriority.high),
-            (Filter2(), HTTPFilterPriority.medium),
-            (Filter5(), sessionDriver.requestFilter.1)
+            (Filter1(), HTTPFilterPriority.low),
+            (Filter2(), HTTPFilterPriority.low),
+            pturnstile.requestFilter
+            
         ]
     return filters
 }()
@@ -326,7 +290,7 @@ let responseFilters: [(HTTPResponseFilter, HTTPFilterPriority)] = {
         [
             (Filter3(), HTTPFilterPriority.high),
             (Filter4(), HTTPFilterPriority.medium),
-            (Filter6(), sessionDriver.responseFilter.1)
+            pturnstile.responseFilter
         ]
     return filters
 }()
