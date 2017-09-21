@@ -3,12 +3,7 @@ import PerfectHTTP
 import PerfectHTTPServer
 
 import StORM
-import MongoDB
 import MongoDBStORM
-import MySQLStORM
-
-import PerfectTurnstileMySQL
-import TurnstilePerfect
 
 
 let server = HTTPServer()
@@ -19,42 +14,16 @@ MongoDBConnection.host = "localhost"
 MongoDBConnection.database = "mydb"
 MongoDBConnection.port = 27017
 
-MySQLConnector.host = "127.0.0.1"
-MySQLConnector.database = "mydb"
-MySQLConnector.username = "sean7218"
-MySQLConnector.password = "123"
-MySQLConnector.port = 3306
-
-let authStore = AuthAccount()
-do {
-    try authStore.setup()
-} catch {
-    print(error)
-}
-
-tokenStore = AccessTokenStore()
-do {
-    try tokenStore?.setup()
-} catch {
-    print(error)
-}
-
-let pturnstile = TurnstilePerfectRealm()
-
-let authJSONRoutes = makeJSONAuthRoutes("/api/v1")
-server.addRoutes(authJSONRoutes)
-
-JSONDecoding.registerJSONDecodable(name: Horse.registerName, creator: { return Horse() })
 JSONDecoding.registerJSONDecodable(name: Bourbon.registerName, creator: { return Bourbon() })
-JSONDecoding.registerJSONDecodable(name: User.registerName, creator: { return User() })
+
 
 routes.add(method: .get, uri: "/", handler: {
     request, response in
-    // Setting the response content type explicitly to text/html
+ 
     response.setHeader(.contentType, value: "text/html")
-    // Adding some HTML to the response body object
+  
     response.appendBody(string: "<html><title>Hello, world!</title><body>Hello, world!</body></html>")
-    // Signalling that the request is completed
+
     response.completed()
 })
 
@@ -83,7 +52,7 @@ routes.add(method: .get, uri: "/v1/bourbon", handler: {
     let wdir = Dir("~/apps/HBApi/Sources/")
     let json = File(wdir.path + "bourbon.json")
     var result = ""
-    
+
     do {
         result = try json.readString()
         let out = try result.jsonDecode()
@@ -109,6 +78,8 @@ routes.add(method: .get, uri: "/v1/bourbon/getAll/", handler: {
             bourbon.price = b.price
             bourbon.proof = b.proof
             bourbon.rating = b.rating
+            bourbon.imageUrl = b.imageUrl
+            bourbon.taste = b.taste
             out.append(bourbon)
         }
         try response.setBody(json: out)
@@ -153,16 +124,18 @@ routes.add(method: .post, uri: "/v1/bourbon/save", handler: {
     if let name = request.param(name: "name"),
         let price = request.param(name: "price"),
         let proof = request.param(name: "proof"),
-        let rating = request.param(name: "rating")
+        let rating = request.param(name: "rating"),
+        let taste = request.param(name: "taste"),
+        let imageUrl = request.param(name: "imageUrl")
     {
         do {
             if (try isBourbonExist(name: name)) {
                 try response.setBody(json: ["Error":"Bourbon Name already exist"])
                 response.completed()
             } else {
-                let _ = try rating.validate()
-                let _ = try price.validate()
-                let _ = try proof.validate()
+                //let _ = try rating.validate()
+                //let _ = try price.validate()
+                //let _ = try proof.validate()
                 let _ = try saveNewBourbon(name: name,
                                            price: Double(price)!,
                                            proof: Double(proof)!,
@@ -185,7 +158,7 @@ routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
     if let name = request.param(name: "name") {
         do {
             guard let price = request.param(name: "price") else { throw ServerError.missingUpdateParameter }
-            let _ = try price.validate()
+            //let _ = try price.validate()
             let _ = try updateBourbon(name: name, price: Double(price)!)
             response.setBody(string: "Updated the bourbon")
             response.completed()
@@ -200,37 +173,42 @@ routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
     }
 })
 
-routes.add(method: .get, uri: "/v2/race", handler: {
+routes.add(method: .post, uri: "/v1/bourbon/update/taste", handler: {
+    request, response in
+    if let name = request.param(name: "name"),
+        let taste = request.param(name: "taste"),
+        let imageUrl = request.param(name:"imageUrl"){
+        do {
+            try updateBourbonTaste(name: name, taste: taste, imageUrl: imageUrl)
+            response.completed()
+        } catch {
+            print(error)
+            response.completed(status: .badRequest)
+        }
+    } else {
+        response.completed(status: HTTPResponseStatus.custom(code: 400, message: "Parameter Error"))
+        }
+
+
+})
+
+routes.add(method: .post, uri: "/v1/bourbon/delete", handler: {
     request, response in
     
-    do {
-        try findAllRaces()
-        response.completed()
-    } catch {
-        print(error)
+    if let name = request.param(name: "name") {
+        do {
+            try deleteObjectByName(name: name)
+            response.completed()
+        } catch {
+            response.completed(status: .badRequest)
+        }
+        
+    } else {
         response.completed(status: .badRequest)
     }
 
 })
 
-routes.add(method: .get, uri: "/v2/race/{name}", handler: {
-    request, response in
-    if let name = request.param(name: "name") {
-        do {
-            let _ = try findRace(name: name)
-            response.completed()
-        } catch {
-            response.status = HTTPResponseStatus.custom(code: 400, message: "Error: \(error)")
-            response.completed()
-        }
-
-    } else {
-        response.status = HTTPResponseStatus.custom(code: 400, message: "Bad Request: No Name Parameter")
-        response.completed()
-    }
-    
-
-})
 
 
 
@@ -253,7 +231,7 @@ struct Filter2: HTTPRequestFilter {
 
 struct Filter3: HTTPResponseFilter {
     func filterHeaders(response: HTTPResponse, callback: (HTTPResponseFilterResult) -> ()) {
-        //
+        // Before the response send to the client, you can do some stuff here
         callback(.continue)
     }
     func filterBody(response: HTTPResponse, callback: (HTTPResponseFilterResult) -> ()) {
@@ -271,15 +249,11 @@ struct Filter4: HTTPResponseFilter {
     }
 }
 
-
-
-
 let requestFilters: [(HTTPRequestFilter, HTTPFilterPriority)] = {
     let filters: [(HTTPRequestFilter, HTTPFilterPriority)] =
         [
             (Filter1(), HTTPFilterPriority.low),
-            (Filter2(), HTTPFilterPriority.low),
-            pturnstile.requestFilter
+            (Filter2(), HTTPFilterPriority.low)
             
         ]
     return filters
@@ -290,7 +264,6 @@ let responseFilters: [(HTTPResponseFilter, HTTPFilterPriority)] = {
         [
             (Filter3(), HTTPFilterPriority.high),
             (Filter4(), HTTPFilterPriority.medium),
-            pturnstile.responseFilter
         ]
     return filters
 }()
@@ -301,9 +274,7 @@ server.setResponseFilters(responseFilters)
 
 server.addRoutes(routes)
 
-server.documentRoot = "./webroot"
-
-server.serverPort = 3000
+server.serverPort = 8181
 
 do {
   try server.start()

@@ -8,6 +8,12 @@
       "version": "2.0.5"
     },
     {
+      "package": "CryptoSwift",
+      "reason": null,
+      "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
+      "version": "0.7.1"
+    },
+    {
       "package": "MongoDB",
       "reason": null,
       "repositoryURL": "https://github.com/PerfectlySoft/Perfect-MongoDB.git",

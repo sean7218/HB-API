@@ -10,24 +10,11 @@ import Foundation
 import StORM
 import MongoDBStORM
 
+/* =============================================================================================
+ Creating object
+ ============================================================================================= */
 
-func saveNewHorse(name: String, earning: String, speed: Int) throws -> HorseORM {
-    let obj = HorseORM()
-    obj.id = obj.newUUID()
-    obj.name = name
-    obj.earning = earning
-    obj.speed = speed
-    
-    do {
-        try obj.save()
-    } catch {
-        throw error
-    }
-    print("'saveNewHorse' - Object Created with id \(obj.id)")
-    return obj
-}
-
-func saveNewBourbon(name: String, price: Double, proof: Double, rating: Int) throws -> BourbonORM {
+func saveNewBourbon(name: String, price: Double, proof: Double, rating: Int, taste: String, imageUrl: String) throws -> BourbonORM {
     let obj = BourbonORM()
     obj.id = obj.newUUID()
     
@@ -35,7 +22,8 @@ func saveNewBourbon(name: String, price: Double, proof: Double, rating: Int) thr
     obj.price = price
     obj.proof = proof
     obj.rating = rating
-    
+    obj.taste = taste
+    obj.imageUrl = imageUrl
     
     do {
         try obj.save()
@@ -46,31 +34,4 @@ func saveNewBourbon(name: String, price: Double, proof: Double, rating: Int) thr
     return obj
 }
 
-func saveNewUser(name: String) throws -> UserORM {
-    let obj = UserORM()
-    obj.id = obj.newUUID()
-    obj.name = name
-    
-    do {
-        try obj.save()
-    } catch {
-        throw error
-    }
-    print("'saveNewUser' Object Created with id \(obj.id)")
-    return obj
-}
-enum ValidationError: Error {
-    case incorrectType
 
-}
-extension String {
-    func validate() throws -> Bool {
-        if Double(self) != nil {
-            return true
-        } else if Int(self) != nil {
-            return true
-        } else {
-            throw ValidationError.incorrectType
-        }
-    }
-}

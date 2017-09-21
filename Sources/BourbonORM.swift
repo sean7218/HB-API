@@ -12,7 +12,7 @@ import StORM
 
 class BourbonORM: MongoDBStORM{
     
-    static let registerName = "bourbon"
+    //static let registerName = "bourbon"
     
     
     var id: String = ""
@@ -20,6 +20,7 @@ class BourbonORM: MongoDBStORM{
     var proof: Double = 0.0
     var price: Double = 0.0
     var rating: Int = 0
+    var taste: String = ""
     var imageUrl: String = ""
     
     override init() {
@@ -30,19 +31,14 @@ class BourbonORM: MongoDBStORM{
     
     
     override func to(_ this: StORMRow) {
-        if let tem = this.data["_id"] as? [String: Any]{
-            id = tem["$oid"] as? String ?? ""
-        } else if let tem = this.data["_id"] as? String {
-            id = tem
-        } else {
-            id = ""
-        }
+
         
+        id = this.data["_id"] as? String ?? ""
         name = this.data["name"] as? String ?? ""
         proof = this.data["proof"] as? Double ?? 0.0
         price = this.data["price"] as? Double ?? 0.0
-        let tem1 = this.data["rating"] as? Double ?? 0.0
-        rating = Int(tem1)
+        rating = this.data["rating"] as? Int ?? 0
+        taste = this.data["taste"] as? String ?? ""
         imageUrl = this.data["imageUrl"] as? String ?? ""
     }
     

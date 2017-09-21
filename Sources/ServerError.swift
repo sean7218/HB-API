@@ -14,3 +14,9 @@ enum ServerError: Error {
     case parameterTypeError
     case missingUpdateParameter
 }
+
+
+enum ValidationError: Error {
+    case incorrectType
+    
+}

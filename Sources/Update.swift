@@ -23,3 +23,14 @@ func updateBourbon(name: String, price: Double) throws -> () {
 
 }
 
+func updateBourbonTaste(name: String, taste: String, imageUrl: String) throws -> () {
+    
+    if (try isBourbonExist(name: name)) {
+        let bourbon = try findBourbon(name: name, rating: nil)
+        bourbon.taste = taste
+        bourbon.imageUrl = imageUrl
+        try bourbon.save()
+    } else {
+        throw ServerError.objectNotExist
+    }
+}
