@@ -133,13 +133,13 @@ routes.add(method: .post, uri: "/v1/bourbon/save", handler: {
                 try response.setBody(json: ["Error":"Bourbon Name already exist"])
                 response.completed()
             } else {
-                //let _ = try rating.validate()
-                //let _ = try price.validate()
-                //let _ = try proof.validate()
+                let _ = try rating.validate()
+                let _ = try price.validate()
+                let _ = try proof.validate()
                 let _ = try saveNewBourbon(name: name,
                                            price: Double(price)!,
                                            proof: Double(proof)!,
-                                           rating: Int(rating)!)
+                                           rating: Int(rating)!, taste: taste, imageUrl: imageUrl)
                 response.setBody(string: "Saving Sucess")
                 response.completed()
             }
@@ -153,12 +153,12 @@ routes.add(method: .post, uri: "/v1/bourbon/save", handler: {
     }
 })
 
-routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
+routes.add(method: .post, uri: "/v1/bourbon/update/price", handler: {
     request, response in
     if let name = request.param(name: "name") {
         do {
             guard let price = request.param(name: "price") else { throw ServerError.missingUpdateParameter }
-            //let _ = try price.validate()
+            let _ = try price.validate()
             let _ = try updateBourbon(name: name, price: Double(price)!)
             response.setBody(string: "Updated the bourbon")
             response.completed()
@@ -173,7 +173,7 @@ routes.add(method: .post, uri: "/v1/bourbon/update", handler: {
     }
 })
 
-routes.add(method: .post, uri: "/v1/bourbon/update/taste", handler: {
+routes.add(method: .post, uri: "/v1/bourbon/update/taste-image", handler: {
     request, response in
     if let name = request.param(name: "name"),
         let taste = request.param(name: "taste"),
