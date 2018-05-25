@@ -1,3 +1,5 @@
+The backend was build using the PerfectSwift framework and it was the fastest one compared to Vapor and others. 
+
 This is a simple Rest API for different kinds of bourbons I like, it gets the rating from this website
 
 https://www.proof66.com/
