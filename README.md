@@ -14,5 +14,6 @@ https://github.com/sean7218/HB-iOS
 
 Please enjoy the bourbon more with this little api :D
 
+API has been discontinued
 
 
